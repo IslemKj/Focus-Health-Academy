@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Focus Health Academy",
+    "slug": "focus-health-academy",
+    "version": "1.0.0",
+    "sdkVersion": "54.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0C4DA2"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.focushealthacademy.app"
+    },
+    "android": {
+      "package": "com.focushealthacademy.app"
+    },
+    "web": {},
+    "plugins": [
+      "expo-video"
+    ]
+  }
+}

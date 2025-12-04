@@ -1,0 +1,48 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+<h1>Welcome to Focus Health Academy! 🎉</h1>
+
+<p>Hi <strong>{{ user_name }}</strong>,</p>
+
+<p>Thank you for joining Focus Health Academy! We're excited to have you as part of our community of healthcare professionals committed to continuous learning and excellence.</p>
+
+<div class="info-box info-box-success">
+    <p style="margin: 0; font-weight: 600; color: #10B981;">✓ Your account has been successfully created!</p>
+</div>
+
+<div class="info-box">
+    <div class="info-row">
+        <span class="info-label">Email:</span>
+        <span class="info-value">{{ email }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Account Type:</span>
+        <span class="info-value">{{ role|title }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Registration Date:</span>
+        <span class="info-value">{{ registration_date }}</span>
+    </div>
+</div>
+
+<p><strong>What's Next?</strong></p>
+
+<ul style="margin: 15px 0 15px 20px; color: #4B5563;">
+    <li style="margin-bottom: 8px;">Browse our comprehensive course catalog</li>
+    <li style="margin-bottom: 8px;">Connect with fellow healthcare professionals</li>
+    <li style="margin-bottom: 8px;">Track your learning progress and earn certificates</li>
+    <li style="margin-bottom: 8px;">Stay updated with the latest medical education content</li>
+</ul>
+
+<center>
+    <a href="{{ app_url }}" class="button">Start Learning Now</a>
+</center>
+
+<p>If you have any questions or need assistance getting started, our support team is here to help!</p>
+
+<p style="margin-top: 30px;">
+    Best regards,<br>
+    <strong>The Focus Health Academy Team</strong>
+</p>
+{% endblock %}

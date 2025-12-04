@@ -1,0 +1,78 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+<h1>Payment Successful! 🎊</h1>
+
+<p>Hi <strong>{{ user_name }}</strong>,</p>
+
+<p>Thank you for your purchase! Your payment has been successfully processed and you now have full access to your course.</p>
+
+<div class="info-box info-box-success">
+    <p style="margin: 0; font-weight: 600; color: #10B981; font-size: 16px;">✓ Payment Confirmed</p>
+</div>
+
+<h2 style="color: #1F2937; font-size: 18px; margin: 25px 0 15px 0;">Order Details</h2>
+
+<div class="info-box">
+    <div class="info-row">
+        <span class="info-label">Course:</span>
+        <span class="info-value">{{ course_title }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Amount Paid:</span>
+        <span class="info-value" style="color: #2563EB; font-weight: 700;">{{ amount }} {{ currency }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Order ID:</span>
+        <span class="info-value" style="font-family: monospace;">{{ order_id }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Purchase Date:</span>
+        <span class="info-value">{{ purchase_date }}</span>
+    </div>
+    {% if payment_reference %}
+    <div class="info-row">
+        <span class="info-label">Payment Reference:</span>
+        <span class="info-value" style="font-family: monospace;">{{ payment_reference }}</span>
+    </div>
+    {% endif %}
+</div>
+
+<h2 style="color: #1F2937; font-size: 18px; margin: 25px 0 15px 0;">Course Information</h2>
+
+<p>{{ course_description }}</p>
+
+<div style="background-color: #F9FAFB; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <p style="margin: 0 0 10px 0;"><strong>📚 Total Lessons:</strong> {{ lesson_count }}</p>
+    <p style="margin: 0 0 10px 0;"><strong>⏱️ Duration:</strong> {{ duration }}</p>
+    <p style="margin: 0;"><strong>👨‍🏫 Instructor:</strong> {{ instructor_name }}</p>
+</div>
+
+<center>
+    <a href="{{ app_url }}/courses/{{ course_id }}" class="button">Start Your Course</a>
+</center>
+
+<div style="background-color: #EFF6FF; border-radius: 8px; padding: 20px; margin: 30px 0;">
+    <p style="margin: 0 0 10px 0; font-weight: 600; color: #1F2937;">💡 Getting Started Tips:</p>
+    <ul style="margin: 10px 0 0 20px; color: #4B5563;">
+        <li style="margin-bottom: 8px;">Access your course anytime from your enrolled courses</li>
+        <li style="margin-bottom: 8px;">Track your progress as you complete each lesson</li>
+        <li style="margin-bottom: 8px;">Earn a certificate upon course completion</li>
+        <li>Download course materials for offline reference</li>
+    </ul>
+</div>
+
+<p>A receipt for this transaction has been saved to your account. You can view all your orders in your profile settings.</p>
+
+<p style="margin-top: 30px;">
+    Happy Learning!<br>
+    <strong>The Focus Health Academy Team</strong>
+</p>
+
+<div class="divider"></div>
+
+<p style="font-size: 13px; color: #6B7280;">
+    <strong>Need Help?</strong><br>
+    If you have any questions about your purchase or need technical support, please contact us at support@focushealthacademy.com
+</p>
+{% endblock %}

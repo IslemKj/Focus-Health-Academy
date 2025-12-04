@@ -1,0 +1,105 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+<h1>Congratulations! 🏆</h1>
+
+<p>Hi <strong>{{ user_name }}</strong>,</p>
+
+<p>We are thrilled to inform you that you have successfully completed <strong>{{ course_title }}</strong>!</p>
+
+<div class="info-box info-box-success">
+    <p style="margin: 0; font-weight: 600; color: #10B981; font-size: 18px; text-align: center;">
+        🎓 Course Completed!
+    </p>
+</div>
+
+<p style="text-align: center; font-size: 16px; color: #1F2937; margin: 25px 0;">
+    Your dedication and commitment to learning have paid off. This is a significant milestone in your professional development journey.
+</p>
+
+<h2 style="color: #1F2937; font-size: 18px; margin: 25px 0 15px 0;">Certificate Details</h2>
+
+<div class="info-box">
+    <div class="info-row">
+        <span class="info-label">Student Name:</span>
+        <span class="info-value">{{ user_name }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Course:</span>
+        <span class="info-value">{{ course_title }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Completion Date:</span>
+        <span class="info-value">{{ completion_date }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Certificate ID:</span>
+        <span class="info-value" style="font-family: monospace;">{{ certificate_id }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Instructor:</span>
+        <span class="info-value">{{ instructor_name }}</span>
+    </div>
+</div>
+
+<div style="background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; border: 2px solid #2563EB;">
+    <div style="font-size: 48px; margin-bottom: 15px;">🏅</div>
+    <h3 style="color: #1E40AF; margin: 0 0 10px 0;">Your Certificate is Ready!</h3>
+    <p style="margin: 0; color: #1F2937;">Download your official certificate of completion</p>
+</div>
+
+<center>
+    <a href="{{ app_url }}/courses/{{ course_id }}" class="button">View & Download Certificate</a>
+</center>
+
+<h2 style="color: #1F2937; font-size: 18px; margin: 35px 0 15px 0;">What You've Achieved</h2>
+
+<div style="background-color: #F9FAFB; border-radius: 8px; padding: 20px; margin: 20px 0;">
+    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 24px; margin-right: 12px;">✅</span>
+        <span style="color: #4B5563;">Completed <strong>{{ lesson_count }}</strong> lessons</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 24px; margin-right: 12px;">📊</span>
+        <span style="color: #4B5563;">Achieved <strong>100%</strong> course progress</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 24px; margin-right: 12px;">⏱️</span>
+        <span style="color: #4B5563;">Total learning time: <strong>{{ duration }}</strong></span>
+    </div>
+    <div style="display: flex; align-items: center;">
+        <span style="font-size: 24px; margin-right: 12px;">🎯</span>
+        <span style="color: #4B5563;">Earned verified certificate</span>
+    </div>
+</div>
+
+<div style="background-color: #ECFDF5; border-left: 4px solid #10B981; padding: 20px; border-radius: 4px; margin: 30px 0;">
+    <p style="margin: 0 0 10px 0; font-weight: 600; color: #059669;">Share Your Achievement! 🎉</p>
+    <p style="margin: 0; color: #047857; font-size: 14px;">
+        Share your certificate on LinkedIn, add it to your resume, or showcase it in your professional portfolio. This achievement demonstrates your commitment to continuous professional development.
+    </p>
+</div>
+
+<h2 style="color: #1F2937; font-size: 18px; margin: 35px 0 15px 0;">Continue Your Learning Journey</h2>
+
+<p>Don't stop here! Explore more courses to expand your knowledge and advance your career in healthcare:</p>
+
+<center>
+    <a href="{{ app_url }}/courses" style="display: inline-block; padding: 12px 28px; background-color: #F3F4F6; color: #2563EB !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 15px 0; border: 2px solid #E5E7EB;">
+        Browse More Courses
+    </a>
+</center>
+
+<p style="margin-top: 35px;">
+    Once again, congratulations on this outstanding achievement!<br><br>
+    Best regards,<br>
+    <strong>The Focus Health Academy Team</strong>
+</p>
+
+<div class="divider"></div>
+
+<p style="font-size: 13px; color: #6B7280;">
+    <strong>Certificate Verification</strong><br>
+    Your certificate can be verified using the certificate ID: <code style="background-color: #F3F4F6; padding: 2px 6px; border-radius: 3px;">{{ certificate_id }}</code>
+</p>
+{% endblock %}
