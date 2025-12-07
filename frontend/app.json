@@ -2,27 +2,41 @@
   "expo": {
     "name": "Focus Health Academy",
     "slug": "focus-health-academy",
-    "version": "1.0.0",
-    "sdkVersion": "54.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
+    "icon": "./assets/iconfha.jpeg",
     "userInterfaceStyle": "light",
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#0C4DA2"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.focushealthacademy.app"
+      "bundleIdentifier": "com.focushealth.academy",
+      "buildNumber": "1.0.1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
-      "package": "com.focushealthacademy.app"
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/iconfha.jpeg",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.focushealth.academy",
+      "versionCode": 2,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
-    "web": {},
-    "plugins": [
-      "expo-video"
-    ]
+    "web": {
+      "favicon": "./assets/iconfha.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4ed86d16-2af7-40bf-a2fa-059936905a35"
+      }
+    }
   }
 }
