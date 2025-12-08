@@ -278,7 +278,7 @@ const ProfileScreen = ({ navigation }) => {
       setUser(null);
       setIsAuthenticated(false);
       Alert.alert('Success', t('deleteAccountSuccess'));
-      navigation.navigate('Home');
+      loadProfile();
     } catch (error) {
       console.error('Delete account error:', error);
       Alert.alert('Error', error.response?.data?.error || t('deleteAccountError'));
