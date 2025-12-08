@@ -16,6 +16,8 @@ import {
   Platform,
   ActivityIndicator,
   Linking,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -127,6 +129,9 @@ const ProfileScreen = ({ navigation }) => {
     certificates: 0,
   });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const { t, language, setLanguage } = useTranslation(translations);
 
   const loadProfile = async () => {
@@ -252,39 +257,34 @@ const ProfileScreen = ({ navigation }) => {
           text: t('deleteAccountConfirm'),
           style: 'destructive',
           onPress: () => {
-            // Prompt for password
-            Alert.prompt(
-              t('deleteAccountPassword'),
-              t('deleteAccountPasswordPlaceholder'),
-              [
-                { text: t('cancel'), style: 'cancel' },
-                {
-                  text: t('deleteAccountConfirm'),
-                  style: 'destructive',
-                  onPress: async (password) => {
-                    if (!password) {
-                      Alert.alert('Error', 'Password is required');
-                      return;
-                    }
-                    try {
-                      await authService.deleteAccount(password);
-                      setUser(null);
-                      setIsAuthenticated(false);
-                      Alert.alert('Success', t('deleteAccountSuccess'));
-                      loadProfile();
-                    } catch (error) {
-                      console.error('Delete account error:', error);
-                      Alert.alert('Error', t('deleteAccountError'));
-                    }
-                  },
-                },
-              ],
-              'secure-text'
-            );
+            setShowDeleteModal(true);
           },
         },
       ]
     );
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (!deletePassword) {
+      Alert.alert('Error', 'Password is required');
+      return;
+    }
+    
+    setDeletingAccount(true);
+    try {
+      await authService.deleteAccount(deletePassword);
+      setShowDeleteModal(false);
+      setDeletePassword('');
+      setUser(null);
+      setIsAuthenticated(false);
+      Alert.alert('Success', t('deleteAccountSuccess'));
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('Delete account error:', error);
+      Alert.alert('Error', error.response?.data?.error || t('deleteAccountError'));
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   const handleLogin = () => {
@@ -356,6 +356,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView 
       style={styles.container}
       showsVerticalScrollIndicator={false}
@@ -615,6 +616,56 @@ const ProfileScreen = ({ navigation }) => {
 
       <View style={styles.bottomSpacer} />
     </ScrollView>
+
+    {/* Delete Account Modal */}
+    <Modal
+      visible={showDeleteModal}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowDeleteModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>{t('deleteAccountPassword')}</Text>
+          <Text style={styles.modalMessage}>{t('deleteAccountPasswordPlaceholder')}</Text>
+          
+          <TextInput
+            style={styles.passwordInput}
+            placeholder={t('deleteAccountPasswordPlaceholder')}
+            value={deletePassword}
+            onChangeText={setDeletePassword}
+            secureTextEntry
+            autoFocus
+          />
+
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalCancelButton]}
+              onPress={() => {
+                setShowDeleteModal(false);
+                setDeletePassword('');
+              }}
+              disabled={deletingAccount}
+            >
+              <Text style={styles.modalCancelText}>{t('cancel')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalDeleteButton]}
+              onPress={confirmDeleteAccount}
+              disabled={deletingAccount}
+            >
+              {deletingAccount ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.modalDeleteText}>{t('deleteAccountConfirm')}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    </View>
   );
 };
 
@@ -907,6 +958,68 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 40,
+  },
+
+  // Delete Account Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  modalMessage: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 20,
+  },
+  passwordInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCancelButton: {
+    backgroundColor: '#F3F4F6',
+  },
+  modalCancelText: {
+    color: '#6B7280',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalDeleteButton: {
+    backgroundColor: '#DC2626',
+  },
+  modalDeleteText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
