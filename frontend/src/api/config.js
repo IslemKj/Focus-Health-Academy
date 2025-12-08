@@ -4,10 +4,12 @@
 
 // Automatically use production or development API
 // __DEV__ is true in development, false in production builds
-export const API_BASE_URL = __DEV__
-  ? 'http://192.168.100.11:8000/api/v1'  // Development (local network)
-  : 'https://api.focushealth-academy.com/api/v1';  // Production
+// export const API_BASE_URL = __DEV__
+//   ? 'http://192.168.100.11:8000/api/v1'  // Development (local network)
+//   : 'https://api.focushealth-academy.com/api/v1';  // Production
 
+// Temporarily using PythonAnywhere URL until DNS propagates
+export const API_BASE_URL = 'https://api.focushealth-academy.com/api/v1';
 // API endpoints
 export const ENDPOINTS = {
   // Auth endpoints
@@ -20,6 +22,7 @@ export const ENDPOINTS = {
     CHANGE_PASSWORD: '/auth/change-password/',
     PASSWORD_RESET: '/auth/password-reset/',
     PASSWORD_RESET_CONFIRM: '/auth/password-reset-confirm/',
+    DELETE_ACCOUNT: '/auth/delete-account/',
   },
   
   // Courses endpoints

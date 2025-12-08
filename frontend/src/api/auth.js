@@ -106,6 +106,20 @@ export const authService = {
   },
 
   /**
+   * Delete user account
+   */
+  deleteAccount: async (password) => {
+    const response = await apiClient.delete(ENDPOINTS.AUTH.DELETE_ACCOUNT, {
+      data: { password },
+    });
+    
+    // Clear local storage after account deletion
+    await AsyncStorage.multiRemove(['access_token', 'refresh_token', 'user']);
+    
+    return response.data;
+  },
+
+  /**
    * Request password reset
    */
   requestPasswordReset: async (email) => {

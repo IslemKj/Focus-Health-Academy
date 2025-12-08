@@ -12,6 +12,7 @@ from .views import (
     change_password_view,
     password_reset_request_view,
     password_reset_confirm_view,
+    delete_account_view,
     UserViewSet,
 )
 
@@ -27,6 +28,7 @@ urlpatterns = [
     # Profile endpoints
     path('auth/profile/', profile_view, name='profile'),
     path('auth/change-password/', change_password_view, name='change_password'),
+    path('auth/delete-account/', delete_account_view, name='delete_account'),
     
     # Password reset endpoints
     path('auth/password-reset/', password_reset_request_view, name='password_reset_request'),

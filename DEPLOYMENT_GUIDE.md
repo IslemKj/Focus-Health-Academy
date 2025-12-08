@@ -75,7 +75,7 @@ DB_HOST=yourusername-0000.postgres.pythonanywhere-services.com
 DB_PORT=10000
 
 # Django Settings
-SECRET_KEY=generate-a-new-secret-key-use-django-secret-key-generator
+SECRET_KEY=#jn_7o172r*@=1)#sr&31pamz%ci14nke7x1x6n_**6)wo8v9^
 DEBUG=False
 ALLOWED_HOSTS=api.focushealth-academy.com,yourusername.pythonanywhere.com
 
@@ -87,14 +87,14 @@ EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=mail.privateemail.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-EMAIL_HOST_USER=inscriptions@focushealth-academy.com
-EMAIL_HOST_PASSWORD=your_email_password
-DEFAULT_FROM_EMAIL=Focus Health Academy <inscriptions@focushealth-academy.com>
+EMAIL_HOST_USER=your_email@focushealth-academy.com
+EMAIL_HOST_PASSWORD=your_email_password_here
+DEFAULT_FROM_EMAIL=Focus Health Academy <your_email@focushealth-academy.com>
 
-# Stripe LIVE Keys (NOT test keys!)
-STRIPE_SECRET_KEY=sk_live_your_live_secret_key_here
-STRIPE_PUBLISHABLE_KEY=pk_live_your_live_publishable_key_here
-STRIPE_WEBHOOK_SECRET=whsec_your_live_webhook_secret_here
+# Stripe Keys (get from Stripe Dashboard)
+STRIPE_SECRET_KEY=your_stripe_secret_key_here
+STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret_here
 ```
 
 **Generate SECRET_KEY:**

@@ -15,6 +15,7 @@ import {
   Dimensions,
   Platform,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -58,6 +59,14 @@ const translations = {
     logoutMessage: 'Are you sure you want to logout?',
     cancel: 'Cancel',
     confirm: 'Logout',
+    deleteAccount: 'Delete Account',
+    deleteAccountTitle: 'Delete Account',
+    deleteAccountMessage: 'This will permanently delete your account and all associated data. This action cannot be undone.',
+    deleteAccountConfirm: 'Delete Account',
+    deleteAccountPassword: 'Enter Password',
+    deleteAccountPasswordPlaceholder: 'Enter your password to confirm',
+    deleteAccountSuccess: 'Your account has been deleted successfully.',
+    deleteAccountError: 'Failed to delete account. Please check your password and try again.',
     // Roles
     student: 'STUDENT',
     instructor: 'INSTRUCTOR',
@@ -93,6 +102,14 @@ const translations = {
     logoutMessage: 'Êtes-vous sûr de vouloir vous déconnecter ?',
     cancel: 'Annuler',
     confirm: 'Se Déconnecter',
+    deleteAccount: 'Supprimer le Compte',
+    deleteAccountTitle: 'Supprimer le Compte',
+    deleteAccountMessage: 'Cela supprimera définitivement votre compte et toutes les données associées. Cette action est irréversible.',
+    deleteAccountConfirm: 'Supprimer le Compte',
+    deleteAccountPassword: 'Entrez le Mot de Passe',
+    deleteAccountPasswordPlaceholder: 'Entrez votre mot de passe pour confirmer',
+    deleteAccountSuccess: 'Votre compte a été supprimé avec succès.',
+    deleteAccountError: 'Échec de la suppression du compte. Veuillez vérifier votre mot de passe et réessayer.',
     // Roles
     student: 'ÉTUDIANT',
     instructor: 'INSTRUCTEUR',
@@ -219,6 +236,51 @@ const ProfileScreen = ({ navigation }) => {
             setUser(null);
             setIsAuthenticated(false);
             loadProfile();
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t('deleteAccountTitle'),
+      t('deleteAccountMessage'),
+      [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('deleteAccountConfirm'),
+          style: 'destructive',
+          onPress: () => {
+            // Prompt for password
+            Alert.prompt(
+              t('deleteAccountPassword'),
+              t('deleteAccountPasswordPlaceholder'),
+              [
+                { text: t('cancel'), style: 'cancel' },
+                {
+                  text: t('deleteAccountConfirm'),
+                  style: 'destructive',
+                  onPress: async (password) => {
+                    if (!password) {
+                      Alert.alert('Error', 'Password is required');
+                      return;
+                    }
+                    try {
+                      await authService.deleteAccount(password);
+                      setUser(null);
+                      setIsAuthenticated(false);
+                      Alert.alert('Success', t('deleteAccountSuccess'));
+                      loadProfile();
+                    } catch (error) {
+                      console.error('Delete account error:', error);
+                      Alert.alert('Error', t('deleteAccountError'));
+                    }
+                  },
+                },
+              ],
+              'secure-text'
+            );
           },
         },
       ]
@@ -463,7 +525,10 @@ const ProfileScreen = ({ navigation }) => {
           <Ionicons name="chevron-forward-outline" size={24} color="#9CA3AF" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => Linking.openURL('https://www.focushealth-academy.com/contact')}
+        >
           <View style={styles.menuIconContainer}>
             <Ionicons name="help-circle-outline" size={24} color="#2563EB" />
           </View>
@@ -471,7 +536,10 @@ const ProfileScreen = ({ navigation }) => {
           <Ionicons name="chevron-forward-outline" size={24} color="#9CA3AF" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.menuItem, styles.lastMenuItem]}>
+        <TouchableOpacity 
+          style={[styles.menuItem, styles.lastMenuItem]}
+          onPress={() => Linking.openURL('https://www.focushealth-academy.com/about')}
+        >
           <View style={styles.menuIconContainer}>
             <Ionicons name="information-circle-outline" size={24} color="#2563EB" />
           </View>
@@ -519,6 +587,19 @@ const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Delete Account Button */}
+      <View style={styles.deleteAccountSection}>
+        <Button
+          title={t('deleteAccount')}
+          onPress={handleDeleteAccount}
+          variant="outline"
+          fullWidth
+          leftIcon="trash-outline"
+          style={styles.deleteAccountButton}
+          textStyle={styles.deleteAccountButtonText}
+        />
+      </View>
 
       {/* Logout Button */}
       <View style={styles.logoutSection}>
@@ -795,6 +876,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#6B7280',
     fontWeight: '500',
+  },
+
+  // Delete Account
+  deleteAccountSection: {
+    paddingHorizontal: isTablet ? 40 : 16,
+    marginBottom: 12,
+    marginTop: 24,
+  },
+  deleteAccountButton: {
+    height: 52,
+    borderRadius: 12,
+    borderColor: '#DC2626',
+    backgroundColor: '#FEF2F2',
+  },
+  deleteAccountButtonText: {
+    color: '#DC2626',
+    fontWeight: '600',
   },
 
   // Logout

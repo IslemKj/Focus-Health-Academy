@@ -1,0 +1,40 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+<h1 style="color: #2563eb; margin-bottom: 24px;">Account Deletion Confirmed</h1>
+
+<p style="font-size: 16px; color: #374151; line-height: 1.6; margin-bottom: 16px;">
+    Dear {{ user_name }},
+</p>
+
+<p style="font-size: 16px; color: #374151; line-height: 1.6; margin-bottom: 16px;">
+    Your Focus Health Academy account has been permanently deleted as requested on {{ deletion_date }}.
+</p>
+
+<div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 24px 0; border-radius: 4px;">
+    <p style="font-size: 14px; color: #92400e; margin: 0;">
+        <strong>⚠️ What this means:</strong><br>
+        • Your account and profile have been permanently deleted<br>
+        • Your course enrollments and progress have been removed<br>
+        • Your personal data has been erased from our systems<br>
+        • This action cannot be undone
+    </p>
+</div>
+
+<p style="font-size: 16px; color: #374151; line-height: 1.6; margin-bottom: 16px;">
+    If you deleted your account by mistake or change your mind, you can create a new account at any time. However, your previous data cannot be recovered.
+</p>
+
+<p style="font-size: 16px; color: #374151; line-height: 1.6; margin-bottom: 24px;">
+    We're sorry to see you go. If you have any feedback about your experience, please don't hesitate to reach out to us at <a href="mailto:support@focushealth-academy.com" style="color: #2563eb;">support@focushealth-academy.com</a>.
+</p>
+
+<p style="font-size: 16px; color: #374151; line-height: 1.6; margin-bottom: 16px;">
+    Thank you for being part of Focus Health Academy.
+</p>
+
+<p style="font-size: 16px; color: #374151; line-height: 1.6;">
+    Best regards,<br>
+    <strong>The Focus Health Academy Team</strong>
+</p>
+{% endblock %}

@@ -12,9 +12,12 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.focushealth.academy",
-      "buildNumber": "1.0.1",
+      "buildNumber": "1.0.2",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Focus Health Academy needs access to your photo library to allow you to select and upload a profile picture for your account. This helps personalize your learning experience.",
+        "NSCameraUsageDescription": "Focus Health Academy needs access to your camera to allow you to take a profile picture for your account. This helps personalize your learning experience.",
+        "NSPhotoLibraryAddUsageDescription": "Focus Health Academy needs permission to save images to your photo library, such as course certificates or educational materials you wish to keep."
       }
     },
     "android": {

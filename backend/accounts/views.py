@@ -289,3 +289,50 @@ def password_reset_confirm_view(request):
             }, status=status.HTTP_400_BAD_REQUEST)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_account_view(request):
+    """
+    Delete user account (GDPR compliance)
+    DELETE /api/v1/auth/delete-account/
+    """
+    user = request.user
+    
+    # Require password confirmation for security
+    password = request.data.get('password')
+    if not password:
+        return Response({
+            'error': 'Password confirmation is required to delete your account.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not user.check_password(password):
+        return Response({
+            'error': 'Incorrect password. Please try again.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Send account deletion confirmation email before deletion
+    from core.email_utils import send_email
+    from datetime import datetime
+    try:
+        send_email(
+            subject='Account Deletion Confirmation - Focus Health Academy',
+            to_email=user.email,
+            template_name='account_deleted',
+            context={
+                'user_name': user.get_full_name() or user.email,
+                'deletion_date': datetime.now().strftime('%B %d, %Y at %I:%M %p'),
+            }
+        )
+    except Exception as e:
+        # Log error but continue with deletion
+        print(f'Failed to send deletion email: {e}')
+    
+    # Delete user account and all associated data
+    user_email = user.email
+    user.delete()
+    
+    return Response({
+        'message': 'Your account has been permanently deleted. We\'re sorry to see you go.'
+    }, status=status.HTTP_200_OK)
