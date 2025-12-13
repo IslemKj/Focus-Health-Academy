@@ -181,10 +181,16 @@ SIMPLE_JWT = {
 # Allow all origins in development (restrict in production)
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://localhost:19006'
-).split(',') if not DEBUG else []
+# Get CORS origins from environment variable and filter out invalid values
+cors_origins_str = config('CORS_ALLOWED_ORIGINS', default='')
+if cors_origins_str and not DEBUG:
+    # Split and filter out invalid origins like '*'
+    CORS_ALLOWED_ORIGINS = [
+        origin.strip() for origin in cors_origins_str.split(',')
+        if origin.strip() and origin.strip() != '*'
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = []
 
 CORS_ALLOW_CREDENTIALS = True
 
