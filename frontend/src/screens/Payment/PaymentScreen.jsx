@@ -29,8 +29,6 @@ const translations = {
     processingFee: 'Processing Fee',
     totalAmount: 'Total Amount',
     paymentMethod: 'Payment Method',
-    testModeActive: 'Test Mode Active',
-    testCardInfo: 'Use card: 4242 4242 4242 4242 • Any future date • Any CVC',
     encryption: '256-bit encryption',
     pciCompliant: 'PCI compliant',
     pay: 'Pay',
@@ -59,8 +57,6 @@ const translations = {
     processingFee: 'Frais de Traitement',
     totalAmount: 'Montant Total',
     paymentMethod: 'Méthode de Paiement',
-    testModeActive: 'Mode Test Actif',
-    testCardInfo: 'Utilisez la carte: 4242 4242 4242 4242 • N\'importe quelle date future • N\'importe quel CVC',
     encryption: 'Chiffrement 256 bits',
     pciCompliant: 'Conforme PCI',
     pay: 'Payer',
@@ -301,7 +297,7 @@ const PaymentScreen = ({ route, navigation }) => {
             <CardField
               postalCodeEnabled={false}
               placeholders={{
-                number: '4242 4242 4242 4242',
+                number: '1234 5678 9012 3456',
               }}
               cardStyle={styles.cardStyle}
               style={styles.cardField}
@@ -309,19 +305,6 @@ const PaymentScreen = ({ route, navigation }) => {
                 setCardComplete(cardDetails.complete);
               }}
             />
-          </View>
-
-          {/* Test Mode Banner */}
-          <View style={styles.testModeBanner}>
-            <View style={styles.testModeIcon}>
-              <Ionicons name="flask-outline" size={18} color="#F59E0B" />
-            </View>
-            <View style={styles.testModeContent}>
-              <Text style={styles.testModeTitle}>{t('testModeActive')}</Text>
-              <Text style={styles.testModeText}>
-                {t('testCardInfo')}
-              </Text>
-            </View>
           </View>
 
           {/* Security Features */}

@@ -71,7 +71,7 @@ class PostViewSet(viewsets.ModelViewSet):
         
         if created:
             # Create notification for post author
-            notify_post_like(post.author, post, user)
+            notify_post_like(post.author, user, post)
             
             return Response({
                 'message': 'Post liked successfully.',

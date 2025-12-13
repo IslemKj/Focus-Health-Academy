@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { StripeProvider } from '@stripe/stripe-react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Navigation from './src/navigation';
 import { authService } from './src/api';
 import theme from './src/theme';
@@ -42,13 +43,15 @@ export default function App() {
   }
 
   return (
-    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
-      <StatusBar style="light" />
-      <Navigation 
-        isAuthenticated={isAuthenticated} 
-        onAuthChange={setIsAuthenticated}
-      />
-    </StripeProvider>
+    <SafeAreaProvider>
+      <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
+        <StatusBar style="light" />
+        <Navigation 
+          isAuthenticated={isAuthenticated} 
+          onAuthChange={setIsAuthenticated}
+        />
+      </StripeProvider>
+    </SafeAreaProvider>
   );
 }
 

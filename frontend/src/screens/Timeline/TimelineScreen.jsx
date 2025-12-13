@@ -71,10 +71,17 @@ const TimelineScreen = ({ navigation }) => {
       } else {
         await timelineService.likePost(postId);
       }
-      // Reload posts to update like status
-      loadPosts(true);
     } catch (error) {
+      console.error('Error updating like:', error);
       Alert.alert('Error', 'Failed to update like. Please try again.');
+      return;
+    }
+    
+    // Reload posts to update like status (don't show error if this fails)
+    try {
+      await loadPosts(true);
+    } catch (error) {
+      console.error('Error reloading posts:', error);
     }
   };
 

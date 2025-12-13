@@ -7,6 +7,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Auth screens
 import LoginScreen from '../screens/Auth/LoginScreen';
@@ -356,7 +358,10 @@ const ProfileStack = () => (
 );
 
 // Main Tab Navigator
-const MainTabs = () => (
+const MainTabs = () => {
+  const insets = useSafeAreaInsets();
+  
+  return (
   <Tab.Navigator
     screenOptions={({ route }) => ({
       headerShown: false,
@@ -380,9 +385,11 @@ const MainTabs = () => (
       tabBarActiveTintColor: theme.colors.primary,
       tabBarInactiveTintColor: theme.colors.gray[500],
       tabBarStyle: {
-        paddingBottom: 5,
-        paddingTop: 5,
-        height: 60,
+        paddingBottom: Platform.OS === 'android' ? insets.bottom + 5 : insets.bottom + 10,
+        paddingTop: 8,
+        height: Platform.OS === 'android' ? 60 + insets.bottom : 70 + insets.bottom,
+        borderTopWidth: 1,
+        borderTopColor: '#E5E7EB',
       },
       tabBarLabelStyle: {
         fontSize: theme.typography.fontSize.xs,
@@ -416,7 +423,8 @@ const MainTabs = () => (
       options={{ title: 'Profile' }}
     />
   </Tab.Navigator>
-);
+  );
+};
 
 // Root Navigator with Auth Modal
 const RootStack = createStackNavigator();
