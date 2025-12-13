@@ -46,10 +46,11 @@ class Notification(models.Model):
         null=True,
         help_text="Type of linked object (course, event, post, etc.)"
     )
-    link_id = models.IntegerField(
+    link_id = models.CharField(
+        max_length=255,
         blank=True,
         null=True,
-        help_text="ID of the linked object"
+        help_text="ID of the linked object (supports both integer and UUID)"
     )
     
     is_read = models.BooleanField(default=False)

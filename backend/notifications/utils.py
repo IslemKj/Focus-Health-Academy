@@ -73,7 +73,7 @@ def notify_post_like(user, post, liker):
             title='New Like',
             message=f'{liker.get_full_name() or liker.email} liked your post',
             link_type='post',
-            link_id=post.id
+            link_id=str(post.id)
         )
 
 
@@ -87,7 +87,7 @@ def notify_post_comment(user, post, commenter, comment_text):
             title='New Comment',
             message=f'{commenter.get_full_name() or commenter.email} commented: "{preview}"',
             link_type='post',
-            link_id=post.id
+            link_id=str(post.id)
         )
 
 
