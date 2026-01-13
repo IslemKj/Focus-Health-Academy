@@ -14,6 +14,7 @@ import { CardField, useStripe } from '@stripe/stripe-react-native';
 import { Ionicons } from '@expo/vector-icons';
 import theme from '../../theme';
 import { useTranslation } from '../../../hooks/useTranslation';
+import paymentService from '../../services/paymentService';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -29,6 +30,7 @@ const translations = {
     processingFee: 'Processing Fee',
     totalAmount: 'Total Amount',
     paymentMethod: 'Payment Method',
+    applePayMethod: 'Apple Pay',
     encryption: '256-bit encryption',
     pciCompliant: 'PCI compliant',
     pay: 'Pay',
@@ -57,6 +59,7 @@ const translations = {
     processingFee: 'Frais de Traitement',
     totalAmount: 'Montant Total',
     paymentMethod: 'Méthode de Paiement',
+    applePayMethod: 'Apple Pay',
     encryption: 'Chiffrement 256 bits',
     pciCompliant: 'Conforme PCI',
     pay: 'Payer',
@@ -86,8 +89,14 @@ const PaymentScreen = ({ route, navigation }) => {
   const [clientSecret, setClientSecret] = useState('');
   const [cardComplete, setCardComplete] = useState(false);
 
+  const isIOS = Platform.OS === 'ios';
+  const isAndroid = Platform.OS === 'android';
+
   useEffect(() => {
-    fetchPaymentIntent();
+    // Only fetch Stripe payment intent on Android
+    if (isAndroid) {
+      fetchPaymentIntent();
+    }
   }, []);
 
   const fetchPaymentIntent = async () => {
@@ -118,6 +127,68 @@ const PaymentScreen = ({ route, navigation }) => {
   };
 
   const handlePayment = async () => {
+    // Free courses/events: enroll directly without payment
+    if (price === 0) {
+      await handleFreeEnrollment();
+      return;
+    }
+
+    if (isIOS) {
+      await handleIOSPayment();
+    } else {
+      await handleAndroidPayment();
+    }
+  };
+
+  /**
+   * Handle free course/event enrollment (no payment needed)
+   */
+  const handleFreeEnrollment = async () => {
+    setLoading(true);
+    try {
+      console.log(`🆓 Free ${type} enrollment for ${itemId}`);
+      
+      // Confirm with backend using 'free' as transaction ID
+      await confirmPurchaseWithBackend('free');
+    } catch (error) {
+      console.error('❌ Free enrollment error:', error);
+      Alert.alert(t('error'), error.message || t('failedToInitialize'));
+      setLoading(false);
+    }
+  };
+
+  /**
+   * iOS: Use Apple In-App Purchase via RevenueCat
+   */
+  const handleIOSPayment = async () => {
+    setLoading(true);
+    try {
+      console.log(`🍎 Starting iOS IAP for ${type} ${itemId}`);
+      
+      const result = await paymentService.purchase(type, itemId, price * 100, 'EUR');
+
+      if (result.cancelled) {
+        setLoading(false);
+        return;
+      }
+
+      if (result.success) {
+        console.log('✅ IAP purchase successful:', result.transactionId);
+        
+        // Confirm with backend using transaction ID
+        await confirmPurchaseWithBackend(result.transactionId);
+      }
+    } catch (error) {
+      console.error('❌ iOS IAP error:', error);
+      Alert.alert(t('paymentFailed'), error.message || t('failedToInitialize'));
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Android: Use Stripe (existing flow)
+   */
+  const handleAndroidPayment = async () => {
     if (!clientSecret || !cardComplete) {
       Alert.alert(t('error'), t('enterCardDetails'));
       return;
@@ -125,7 +196,7 @@ const PaymentScreen = ({ route, navigation }) => {
 
     setLoading(true);
     try {
-      console.log('Starting payment with clientSecret:', clientSecret?.substring(0, 20) + '...');
+      console.log('🤖 Starting Android Stripe payment with clientSecret:', clientSecret?.substring(0, 20) + '...');
       
       const { error, paymentIntent } = await confirmPayment(clientSecret, {
         paymentMethodType: 'Card',
@@ -142,79 +213,78 @@ const PaymentScreen = ({ route, navigation }) => {
       }
 
       if (paymentIntent && paymentIntent.status.toLowerCase() === 'succeeded') {
-        console.log('Payment succeeded, confirming with backend...');
-        
-        // Payment succeeded, now confirm with backend to create enrollment/registration
-        try {
-          let confirmResponse;
-          if (type === 'course') {
-            const { coursesService } = require('../../api');
-            console.log('Calling confirmPayment for course:', itemId, 'with payment intent:', paymentIntent.id);
-            confirmResponse = await coursesService.confirmPayment(itemId, paymentIntent.id);
-          } else {
-            const { eventsService } = require('../../api');
-            console.log('Calling confirmPayment for event:', itemId, 'with payment intent:', paymentIntent.id);
-            confirmResponse = await eventsService.confirmPayment(itemId, paymentIntent.id);
-          }
-
-          console.log('✅ Backend confirmation successful:', confirmResponse);
-
-          // Check if item is in-person to determine where to navigate
-          const isInPerson = confirmResponse?.course?.is_in_person || confirmResponse?.event?.is_in_person || false;
-          const hasQRCode = confirmResponse?.qr_code;
-
-          console.log('Is in-person:', isInPerson, 'Has QR:', hasQRCode);
-
-          const successMessage = isInPerson
-            ? t('enrollmentConfirmedTickets')
-            : t('enrollmentConfirmedCourses');
-
-          const targetScreen = isInPerson ? 'MyTickets' : 'MyCourses';
-
-          console.log('Navigating to:', targetScreen);
-
-          Alert.alert(
-            t('paymentSuccessful'),
-            successMessage,
-            [
-              {
-                text: t('ok'),
-                onPress: () => {
-                  if (onSuccess) onSuccess();
-                  // Navigate to ProfileTab, then to the specific screen
-                  navigation.navigate('Main', {
-                    screen: 'ProfileTab',
-                    params: {
-                      screen: targetScreen
-                    }
-                  });
-                },
-              },
-            ]
-          );
-        } catch (confirmError) {
-          console.error('❌ Backend confirmation error:', confirmError);
-          console.error('Error response:', confirmError.response?.data);
-          console.error('Error status:', confirmError.response?.status);
-          const errorMsg = confirmError.response?.data?.error || confirmError.message || 'Unknown error';
-          Alert.alert(
-            t('paymentProcessed'),
-            `${t('enrollmentIssue')}: ${errorMsg}. ${t('contactSupport')}`,
-            [
-              {
-                text: t('ok'),
-                onPress: () => navigation.goBack(),
-              },
-            ]
-          );
-        }
+        console.log('✅ Stripe payment succeeded, confirming with backend...');
+        await confirmPurchaseWithBackend(paymentIntent.id);
       } else {
         console.warn('Payment intent status not succeeded:', paymentIntent?.status);
         Alert.alert(t('paymentIncomplete'), t('paymentNotCompleted'));
+        setLoading(false);
       }
     } catch (err) {
       console.error('Payment error:', err);
       Alert.alert(t('error'), t('paymentFailed'));
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Confirm purchase with backend (works for both IAP and Stripe)
+   */
+  const confirmPurchaseWithBackend = async (transactionId) => {
+    try {
+      let confirmResponse;
+      if (type === 'course') {
+        const { coursesService } = require('../../api');
+        console.log('Calling confirmPayment for course:', itemId, 'with transaction:', transactionId);
+        confirmResponse = await coursesService.confirmPayment(itemId, transactionId);
+      } else {
+        const { eventsService } = require('../../api');
+        console.log('Calling confirmPayment for event:', itemId, 'with transaction:', transactionId);
+        confirmResponse = await eventsService.confirmPayment(itemId, transactionId);
+      }
+
+      console.log('✅ Backend confirmation successful:', confirmResponse);
+
+      // Check if item is in-person to determine where to navigate
+      const isInPerson = confirmResponse?.course?.is_in_person || confirmResponse?.event?.is_in_person || false;
+
+      const successMessage = isInPerson
+        ? t('enrollmentConfirmedTickets')
+        : t('enrollmentConfirmedCourses');
+
+      const targetScreen = isInPerson ? 'MyTickets' : 'MyCourses';
+
+      Alert.alert(
+        t('paymentSuccessful'),
+        successMessage,
+        [
+          {
+            text: t('ok'),
+            onPress: () => {
+              if (onSuccess) onSuccess();
+              navigation.navigate('Main', {
+                screen: 'ProfileTab',
+                params: {
+                  screen: targetScreen
+                }
+              });
+            },
+          },
+        ]
+      );
+    } catch (confirmError) {
+      console.error('❌ Backend confirmation error:', confirmError);
+      const errorMsg = confirmError.response?.data?.error || confirmError.message || 'Unknown error';
+      Alert.alert(
+        t('paymentProcessed'),
+        `${t('enrollmentIssue')}: ${errorMsg}. ${t('contactSupport')}`,
+        [
+          {
+            text: t('ok'),
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
     } finally {
       setLoading(false);
     }
@@ -286,48 +356,64 @@ const PaymentScreen = ({ route, navigation }) => {
           </View>
         </View>
 
-        {/* Payment Method Card */}
-        <View style={styles.paymentCard}>
-          <View style={styles.paymentHeader}>
-            <Ionicons name="card-outline" size={24} color={theme.colors.primary} />
-            <Text style={styles.paymentHeaderText}>{t('paymentMethod')}</Text>
-          </View>
-
-          <View style={styles.cardFieldWrapper}>
-            <CardField
-              postalCodeEnabled={false}
-              placeholders={{
-                number: '1234 5678 9012 3456',
-              }}
-              cardStyle={styles.cardStyle}
-              style={styles.cardField}
-              onCardChange={(cardDetails) => {
-                setCardComplete(cardDetails.complete);
-              }}
-            />
-          </View>
-
-          {/* Security Features */}
-          <View style={styles.securityFeatures}>
-            <View style={styles.securityItem}>
-              <Ionicons name="shield-checkmark" size={16} color="#10B981" />
-              <Text style={styles.securityText}>{t('encryption')}</Text>
+        {/* Payment Method Card - ONLY SHOW ON ANDROID */}
+        {isAndroid && (
+          <View style={styles.paymentCard}>
+            <View style={styles.paymentHeader}>
+              <Ionicons name="card-outline" size={24} color={theme.colors.primary} />
+              <Text style={styles.paymentHeaderText}>{t('paymentMethod')}</Text>
             </View>
-            <View style={styles.securityItem}>
-              <Ionicons name="lock-closed" size={16} color="#10B981" />
-              <Text style={styles.securityText}>{t('pciCompliant')}</Text>
+
+            <View style={styles.cardFieldWrapper}>
+              <CardField
+                postalCodeEnabled={false}
+                placeholders={{
+                  number: '1234 5678 9012 3456',
+                }}
+                cardStyle={styles.cardStyle}
+                style={styles.cardField}
+                onCardChange={(cardDetails) => {
+                  setCardComplete(cardDetails.complete);
+                }}
+              />
+            </View>
+
+            {/* Security Features */}
+            <View style={styles.securityFeatures}>
+              <View style={styles.securityItem}>
+                <Ionicons name="shield-checkmark" size={16} color="#10B981" />
+                <Text style={styles.securityText}>{t('encryption')}</Text>
+              </View>
+              <View style={styles.securityItem}>
+                <Ionicons name="lock-closed" size={16} color="#10B981" />
+                <Text style={styles.securityText}>{t('pciCompliant')}</Text>
+              </View>
             </View>
           </View>
-        </View>
+        )}
+
+        {/* iOS Payment Info */}
+        {isIOS && (
+          <View style={styles.paymentCard}>
+            <View style={styles.paymentHeader}>
+              <Ionicons name="logo-apple" size={24} color={theme.colors.primary} />
+              <Text style={styles.paymentHeaderText}>{t('applePayMethod')}</Text>
+            </View>
+            <Text style={styles.iapInfo}>
+              Your purchase will be processed through your Apple ID and appear on your Apple account statement.
+            </Text>
+          </View>
+        )}
 
         {/* Payment Button */}
         <TouchableOpacity
           style={[
             styles.payButton, 
-            (!cardComplete || loading) && styles.payButtonDisabled
+            (isAndroid && (!cardComplete || loading)) && styles.payButtonDisabled,
+            loading && styles.payButtonDisabled
           ]}
           onPress={handlePayment}
-          disabled={!cardComplete || loading}
+          disabled={(isAndroid && !cardComplete) || loading}
           activeOpacity={0.8}
         >
           {loading ? (
@@ -539,6 +625,11 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     marginLeft: 12,
   },
+  iapInfo: {
+    fontSize: isTablet ? 15 : 14,
+    color: '#6B7280',
+    lineHeight: isTablet ? 22 : 20,
+  },
   cardFieldWrapper: {
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
@@ -554,33 +645,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
     fontSize: isTablet ? 18 : 16,
-  },
-  testModeBanner: {
-    flexDirection: 'row',
-    backgroundColor: '#FEF3C7',
-    borderRadius: 12,
-    padding: isTablet ? 16 : 12,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#F59E0B',
-  },
-  testModeIcon: {
-    marginRight: 12,
-    marginTop: 2,
-  },
-  testModeContent: {
-    flex: 1,
-  },
-  testModeTitle: {
-    fontSize: isTablet ? 15 : 13,
-    fontWeight: '700',
-    color: '#92400E',
-    marginBottom: 4,
-  },
-  testModeText: {
-    fontSize: isTablet ? 13 : 11,
-    color: '#78350F',
-    lineHeight: isTablet ? 18 : 16,
   },
   securityFeatures: {
     flexDirection: 'row',

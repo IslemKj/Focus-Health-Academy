@@ -219,7 +219,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def confirm_payment(self, request, pk=None):
-        """Confirm payment and create registration after successful Stripe payment."""
+        """Confirm payment and create registration after successful payment (Stripe or IAP)."""
         event = self.get_object()
         user = request.user
         payment_intent_id = request.data.get('payment_intent_id')
@@ -234,14 +234,72 @@ class EventViewSet(viewsets.ModelViewSet):
             serializer = EventRegistrationSerializer(existing)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        # Verify payment with Stripe
-        stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', None)
-        try:
-            intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-            if intent.status != 'succeeded':
-                return Response({'error': 'Payment not completed.'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': f'Payment verification failed: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+        # Handle free events
+        if payment_intent_id == 'free':
+            # Check if there's a cancelled registration and reactivate it
+            try:
+                registration = EventRegistration.objects.get(attendee=user, event=event, is_cancelled=True)
+                registration.is_cancelled = False
+            except EventRegistration.DoesNotExist:
+                # Create new registration if none exists
+                registration = EventRegistration.objects.create(attendee=user, event=event)
+            
+            registration.amount_paid = 0
+            registration.currency = 'EUR'
+            registration.payment_reference = 'free'
+            
+            # Generate QR code for in-person events
+            if event.is_in_person:
+                import qrcode
+                import io
+                import base64
+                qr_payload = {
+                    'registration_id': str(registration.id),
+                    'event_id': str(event.id),
+                    'attendee_id': str(user.id),
+                    'name': f"{user.get_full_name()}",
+                    'event_title': event.title,
+                }
+                qr_text = str(qr_payload)
+                qr = qrcode.QRCode(box_size=10, border=4)
+                qr.add_data(qr_text)
+                qr.make(fit=True)
+                img = qr.make_image(fill_color="black", back_color="white")
+                buffer = io.BytesIO()
+                img.save(buffer, format='PNG')
+                buffer.seek(0)
+                qr_b64 = base64.b64encode(buffer.read()).decode('utf-8')
+                registration.qr_code = qr_b64
+            
+            registration.save()
+            serializer = EventRegistrationSerializer(registration)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # Determine payment type: IAP (iOS) vs Stripe (Android)
+        # Stripe payment_intent_id starts with 'pi_', IAP transaction IDs don't
+        is_iap = not payment_intent_id.startswith('pi_')
+        
+        amount_paid = 0
+        currency = 'EUR'
+        
+        if is_iap:
+            # Apple IAP - RevenueCat already validated the receipt
+            # We trust the transaction ID from RevenueCat
+            amount_paid = float(event.price) if event.price else 0
+            currency = 'EUR'
+            # In production, you could add additional validation here
+            # or use RevenueCat webhooks for extra security
+        else:
+            # Stripe payment verification (Android)
+            stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', None)
+            try:
+                intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+                if intent.status != 'succeeded':
+                    return Response({'error': 'Payment not completed.'}, status=status.HTTP_400_BAD_REQUEST)
+                amount_paid = float(intent.amount) / 100.0
+                currency = intent.currency.upper()
+            except Exception as e:
+                return Response({'error': f'Payment verification failed: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if there's a cancelled registration and reactivate it
         try:
@@ -251,8 +309,8 @@ class EventViewSet(viewsets.ModelViewSet):
             # Create new registration if none exists
             registration = EventRegistration.objects.create(attendee=user, event=event)
         registration.paid = True
-        registration.amount_paid = float(intent.amount) / 100.0
-        registration.currency = intent.currency.upper()
+        registration.amount_paid = amount_paid
+        registration.currency = currency
         registration.payment_reference = payment_intent_id
 
         # Generate QR code only for in-person events

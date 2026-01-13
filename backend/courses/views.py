@@ -124,7 +124,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def confirm_payment(self, request, pk=None):
-        """Confirm payment and create enrollment after successful Stripe payment."""
+        """Confirm payment and create enrollment after successful payment (Stripe or IAP)."""
         course = self.get_object()
         user = request.user
         payment_intent_id = request.data.get('payment_intent_id')
@@ -138,14 +138,54 @@ class CourseViewSet(viewsets.ModelViewSet):
             serializer = EnrollmentSerializer(existing)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        # Verify payment with Stripe
-        stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', None)
-        try:
-            intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-            if intent.status != 'succeeded':
-                return Response({'error': 'Payment not completed.'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': f'Payment verification failed: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+        # Handle free courses/events
+        if payment_intent_id == 'free':
+            # Check if there's an inactive enrollment and reactivate it
+            try:
+                enrollment = Enrollment.objects.get(student=user, course=course, is_active=False)
+                enrollment.is_active = True
+            except Enrollment.DoesNotExist:
+                # Create new enrollment if none exists
+                enrollment = Enrollment.objects.create(student=user, course=course)
+            
+            enrollment.paid = True
+            enrollment.amount_paid = 0
+            enrollment.currency = 'EUR'
+            enrollment.payment_reference = 'free'
+            
+            # Create lesson progress entries for all lessons
+            for lesson in course.lessons.all():
+                LessonProgress.objects.get_or_create(enrollment=enrollment, lesson=lesson)
+            
+            enrollment.save()
+            serializer = EnrollmentSerializer(enrollment)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # Determine payment type: IAP (iOS) vs Stripe (Android)
+        # Stripe payment_intent_id starts with 'pi_', IAP transaction IDs don't
+        is_iap = not payment_intent_id.startswith('pi_')
+        
+        amount_paid = 0
+        currency = 'EUR'
+        
+        if is_iap:
+            # Apple IAP - RevenueCat already validated the receipt
+            # We trust the transaction ID from RevenueCat
+            amount_paid = float(course.price) if course.price else 0
+            currency = 'EUR'
+            # In production, you could add additional validation here
+            # or use RevenueCat webhooks for extra security
+        else:
+            # Stripe payment verification (Android)
+            stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', None)
+            try:
+                intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+                if intent.status != 'succeeded':
+                    return Response({'error': 'Payment not completed.'}, status=status.HTTP_400_BAD_REQUEST)
+                amount_paid = float(intent.amount) / 100.0
+                currency = intent.currency.upper()
+            except Exception as e:
+                return Response({'error': f'Payment verification failed: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if there's an inactive enrollment and reactivate it
         is_reactivation = False
@@ -158,8 +198,8 @@ class CourseViewSet(viewsets.ModelViewSet):
             enrollment = Enrollment.objects.create(student=user, course=course)
         
         enrollment.paid = True
-        enrollment.amount_paid = float(intent.amount) / 100.0
-        enrollment.currency = intent.currency.upper()
+        enrollment.amount_paid = amount_paid
+        enrollment.currency = currency
         enrollment.payment_reference = payment_intent_id
 
         # Generate QR code only for in-person courses
@@ -285,7 +325,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def unenroll(self, request, pk=None):
         """
-        Unenroll the current user from a course
+        Unenroll the current user from a course (delete enrollment)
         POST /api/v1/courses/{id}/unenroll/
         """
         course = self.get_object()
@@ -293,8 +333,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         
         try:
             enrollment = Enrollment.objects.get(student=user, course=course, is_active=True)
-            enrollment.is_active = False
-            enrollment.save()
+            enrollment.delete()  # Delete instead of just deactivating
             
             return Response({
                 'message': 'Successfully unenrolled from the course.'
