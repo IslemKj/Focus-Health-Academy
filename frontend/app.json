@@ -2,17 +2,17 @@
   "expo": {
     "name": "Focus Health Academy",
     "slug": "focus-health-academy",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
-    "icon": "./assets/iconfha.jpeg",
+    "icon": "./assets/iconfha.png",
     "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.focushealth.academy",
-      "buildNumber": "1.0.5",
+      "bundleIdentifier": "com.focushealthservices.academy",
+      "buildNumber": "1.0.7",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "Focus Health Academy needs access to your photo library to allow you to select and upload a profile picture for your account. This helps personalize your learning experience.",
@@ -22,11 +22,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/iconfha.jpeg",
+        "foregroundImage": "./assets/iconfha.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.focushealth.academy",
-      "versionCode": 6,
+      "versionCode": 8,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

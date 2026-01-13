@@ -394,7 +394,13 @@ const CourseDetailsScreen = ({ route, navigation }) => {
               ) : (
                 <Button
                   title={t('goToCourse')}
-                  onPress={() => navigation.navigate('CoursePlayer', { courseId })}
+                  onPress={() => navigation.navigate('Main', {
+                    screen: 'ProfileTab',
+                    params: {
+                      screen: 'CoursePlayer',
+                      params: { courseId }
+                    }
+                  })}
                   fullWidth
                   style={styles.enrollButton}
                 />

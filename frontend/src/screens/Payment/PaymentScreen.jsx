@@ -128,7 +128,8 @@ const PaymentScreen = ({ route, navigation }) => {
 
   const handlePayment = async () => {
     // Free courses/events: enroll directly without payment
-    if (price === 0) {
+    const numPrice = parseFloat(price);
+    if (numPrice === 0 || isNaN(numPrice)) {
       await handleFreeEnrollment();
       return;
     }

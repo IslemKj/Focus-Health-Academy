@@ -4,14 +4,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, Platform } from 'react-native';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Navigation from './src/navigation';
 import { authService } from './src/api';
+import paymentService from './src/services/paymentService';
 import theme from './src/theme';
 
-// Replace with your Stripe publishable key
+// Replace with your Stripe publishable key (Android only)
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SZCiOH9PfzfrhLGBMdvj0OBwHqJdxeIwUcbqk5B5rBXizAaH5XpqKM6fZVdfp4Hvp2Ssv299ZGQavAirGaX99Cj00LxAw7oyI';
 
 export default function App() {
@@ -19,18 +20,54 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth();
+    initializeApp();
   }, []);
 
-  const checkAuth = async () => {
+  const initializeApp = async () => {
     try {
+      // Initialize RevenueCat (iOS only)
+      await paymentService.initialize();
+      
+      // Check authentication
       const authenticated = await authService.isAuthenticated();
       setIsAuthenticated(authenticated);
+      
+      // If user is authenticated, identify them in RevenueCat (iOS only)
+      if (authenticated && Platform.OS === 'ios') {
+        try {
+          const profile = await authService.getProfile();
+          if (profile?.id) {
+            await paymentService.identifyUser(profile.id);
+          }
+        } catch (error) {
+          console.error('Failed to identify user in RevenueCat:', error);
+        }
+      }
     } catch (error) {
-      console.error('Auth check error:', error);
+      console.error('App initialization error:', error);
       setIsAuthenticated(false);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAuthChange = async (authenticated) => {
+    setIsAuthenticated(authenticated);
+    
+    // Identify or logout user in RevenueCat (iOS only)
+    if (Platform.OS === 'ios') {
+      if (authenticated) {
+        try {
+          const profile = await authService.getProfile();
+          if (profile?.id) {
+            await paymentService.identifyUser(profile.id);
+          }
+        } catch (error) {
+          console.error('Failed to identify user in RevenueCat:', error);
+        }
+      } else {
+        await paymentService.logout();
+      }
     }
   };
 
@@ -48,7 +85,7 @@ export default function App() {
         <StatusBar style="light" />
         <Navigation 
           isAuthenticated={isAuthenticated} 
-          onAuthChange={setIsAuthenticated}
+          onAuthChange={handleAuthChange}
         />
       </StripeProvider>
     </SafeAreaProvider>

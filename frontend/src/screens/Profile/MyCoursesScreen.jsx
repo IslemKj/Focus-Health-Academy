@@ -68,7 +68,7 @@ const MyCoursesScreen = ({ navigation }) => {
       // Filter to show only online courses in My Courses
       // In-person courses should only show QR ticket, not in course list
       const onlineCourses = allEnrollments.filter(enrollment => 
-        enrollment.course?.delivery_mode === 'online'
+        !enrollment.course?.is_in_person && enrollment.is_active
       );
       
       setEnrollments(onlineCourses);
