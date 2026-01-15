@@ -30,7 +30,7 @@ const translations = {
     processingFee: 'Processing Fee',
     totalAmount: 'Total Amount',
     paymentMethod: 'Payment Method',
-    applePayMethod: 'Apple Pay',
+    purchase: 'Purchase',
     encryption: '256-bit encryption',
     pciCompliant: 'PCI compliant',
     pay: 'Pay',
@@ -59,7 +59,7 @@ const translations = {
     processingFee: 'Frais de Traitement',
     totalAmount: 'Montant Total',
     paymentMethod: 'Méthode de Paiement',
-    applePayMethod: 'Apple Pay',
+    purchase: 'Achat',
     encryption: 'Chiffrement 256 bits',
     pciCompliant: 'Conforme PCI',
     pay: 'Payer',
@@ -398,10 +398,10 @@ const PaymentScreen = ({ route, navigation }) => {
           <View style={styles.paymentCard}>
             <View style={styles.paymentHeader}>
               <Ionicons name="logo-apple" size={24} color={theme.colors.primary} />
-              <Text style={styles.paymentHeaderText}>{t('applePayMethod')}</Text>
+              <Text style={styles.paymentHeaderText}>{t('purchase')}</Text>
             </View>
             <Text style={styles.iapInfo}>
-              Your purchase will be processed through your Apple ID and appear on your Apple account statement.
+              Tap the button below to proceed to purchase.
             </Text>
           </View>
         )}
