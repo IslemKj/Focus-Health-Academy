@@ -20,10 +20,9 @@ All iOS purchases use Apple In-App Purchase exclusively. Users tap "Purchase" an
 **Q3: What purchased content can users access?**  
 - Online courses: video lessons, progress tracking, certificates, lifetime access
 - In-person events: QR code tickets, course materials, certificates
-- All content syncs across platforms via user account
 
 **Q4: What paid features don't use IAP?**  
-On iOS, all paid digital content uses Apple In-App Purchase exclusively. No alternative payment methods exist in the iOS app.
+all paid digital content uses Apple In-App Purchase exclusively. No alternative payment methods exist in the app.
 
 **Q5: Maximum users in live services?**  
 Varies by organization and event. We maintain reasonable class sizes for quality education.
@@ -33,7 +32,7 @@ Both. Online courses are accessed remotely 24/7. In-person courses/events occur 
 
 ---
 
-Focus Health Academy is an educational platform with all iOS purchases using Apple IAP. The app contains complete production content.
+Focus Health Academy is an educational platform with all purchases using Apple IAP. The app contains complete production content.
 
 **Submitted by:** Focus Health & Services  
 **Date:** January 13, 2026  
