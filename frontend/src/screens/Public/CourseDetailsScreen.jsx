@@ -102,6 +102,7 @@ const CourseDetailsScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollmentId, setEnrollmentId] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [localQrBase64, setLocalQrBase64] = useState(null);
@@ -144,6 +145,7 @@ const CourseDetailsScreen = ({ route, navigation }) => {
       const data = await coursesService.getCourse(courseId);
       setCourse(data);
       setIsEnrolled(data.is_enrolled || false);
+      setEnrollmentId(data.enrollment_id || null);
     } catch (error) {
       console.error('Error loading course:', error);
       Alert.alert(t('error'), t('failedToLoad'));
@@ -398,7 +400,10 @@ const CourseDetailsScreen = ({ route, navigation }) => {
                     screen: 'ProfileTab',
                     params: {
                       screen: 'CoursePlayer',
-                      params: { courseId }
+                      params: { 
+                        courseId,
+                        enrollmentId 
+                      }
                     }
                   })}
                   fullWidth

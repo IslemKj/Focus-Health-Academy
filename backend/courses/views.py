@@ -76,14 +76,20 @@ class CourseViewSet(viewsets.ModelViewSet):
         
         # Add is_enrolled field if user is authenticated
         if request.user.is_authenticated:
-            is_enrolled = Enrollment.objects.filter(
+            enrollment = Enrollment.objects.filter(
                 student=request.user,
                 course=instance,
                 is_active=True
-            ).exists()
-            data['is_enrolled'] = is_enrolled
+            ).first()
+            if enrollment:
+                data['is_enrolled'] = True
+                data['enrollment_id'] = str(enrollment.id)
+            else:
+                data['is_enrolled'] = False
+                data['enrollment_id'] = None
         else:
             data['is_enrolled'] = False
+            data['enrollment_id'] = None
         
         return Response(data)
 

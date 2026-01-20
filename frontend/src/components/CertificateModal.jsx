@@ -17,10 +17,7 @@ import { captureRef } from 'react-native-view-shot';
 const CertificateModal = ({ visible, onClose, certificateData }) => {
   const certificateRef = useRef();
 
-  console.log('CertificateModal - visible:', visible, 'certificateData:', certificateData);
-
   if (!certificateData) {
-    console.log('CertificateModal - No certificate data, returning null');
     return null;
   }
 
