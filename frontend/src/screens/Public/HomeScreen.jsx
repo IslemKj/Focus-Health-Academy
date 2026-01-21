@@ -110,8 +110,8 @@ const HomeScreen = ({ navigation }) => {
     setLoading(true);
     try {
       const [coursesData, eventsData] = await Promise.all([
-        coursesService.getCourses({ page_size: 5 }),
-        eventsService.getEvents({ is_featured: true, page_size: 5 }),
+        coursesService.getCourses({ page_size: 10 }),
+        eventsService.getEvents({ page_size: 10 }),
       ]);
       setCourses(coursesData.results || coursesData);
       setEvents(eventsData.results || eventsData);
@@ -296,18 +296,30 @@ const HomeScreen = ({ navigation }) => {
             <Ionicons name="arrow-forward" size={18} color="#2563EB" />
           </TouchableOpacity>
         </View>
-        <View style={styles.cardsContainer}>
-          {courses.slice(0, 3).map((course) => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              onPress={() => navigation.navigate('CourseDetails', { courseId: course.id })}
-              style={styles.card}
-              language={language}
-            />
-          ))}
-        </View>
-        {courses.length === 0 && !loading && (
+        {courses.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.carouselContainer}
+            decelerationRate="fast"
+            snapToInterval={isTablet ? 380 : width - 48}
+            snapToAlignment="start"
+          >
+            {courses.map((course, index) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                onPress={() => navigation.navigate('CourseDetails', { courseId: course.id })}
+                style={[
+                  styles.carouselCard,
+                  index === 0 && styles.carouselCardFirst,
+                  index === courses.length - 1 && styles.carouselCardLast
+                ]}
+                language={language}
+              />
+            ))}
+          </ScrollView>
+        ) : !loading && (
           <View style={styles.emptyState}>
             <Ionicons name="school-outline" size={48} color="#D1D5DB" />
             <Text style={styles.emptyStateText}>{t('noCoursesAvailable')}</Text>
@@ -330,18 +342,30 @@ const HomeScreen = ({ navigation }) => {
             <Ionicons name="arrow-forward" size={18} color="#2563EB" />
           </TouchableOpacity>
         </View>
-        <View style={styles.cardsContainer}>
-          {events.slice(0, 3).map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              onPress={() => navigation.navigate('EventDetails', { eventId: event.id })}
-              style={styles.card}
-              language={language}
-            />
-          ))}
-        </View>
-        {events.length === 0 && !loading && (
+        {events.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.carouselContainer}
+            decelerationRate="fast"
+            snapToInterval={isTablet ? 380 : width - 48}
+            snapToAlignment="start"
+          >
+            {events.map((event, index) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onPress={() => navigation.navigate('EventDetails', { eventId: event.id })}
+                style={[
+                  styles.carouselCard,
+                  index === 0 && styles.carouselCardFirst,
+                  index === events.length - 1 && styles.carouselCardLast
+                ]}
+                language={language}
+              />
+            ))}
+          </ScrollView>
+        ) : !loading && (
           <View style={styles.emptyState}>
             <Ionicons name="calendar-outline" size={48} color="#D1D5DB" />
             <Text style={styles.emptyStateText}>{t('noUpcomingEvents')}</Text>
@@ -678,6 +702,21 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 40,
+  },
+  // Carousel styles
+  carouselContainer: {
+    paddingLeft: 16,
+    paddingRight: 16,
+  },
+  carouselCard: {
+    width: isTablet ? 360 : width - 64,
+    marginRight: 16,
+  },
+  carouselCardFirst: {
+    marginLeft: 0,
+  },
+  carouselCardLast: {
+    marginRight: 16,
   },
 });
 

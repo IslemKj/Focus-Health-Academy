@@ -322,7 +322,11 @@ const ProfileStack = () => (
     <Stack.Screen 
       name="CoursePlayer" 
       component={CoursePlayerScreen}
-      options={{ title: 'Course Player' }}
+      options={{ 
+        title: 'Course Player',
+        headerBackTitleVisible: false,
+        headerLeft: undefined, // Ensure default back button is shown
+      }}
     />
     <Stack.Screen 
       name="EditProfile" 
