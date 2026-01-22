@@ -5,6 +5,11 @@
     "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/iconfha.png",
+    "splash": {
+      "image": "./assets/logofhe3.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
