@@ -82,7 +82,7 @@ const translations = {
 };
 
 const PaymentScreen = ({ route, navigation }) => {
-  const { type, itemId, title, price, onSuccess } = route.params;
+  const { type, itemId, title, price, isInPerson, onSuccess } = route.params;
   const { confirmPayment } = useStripe();
   const { t, language } = useTranslation(translations);
   const [loading, setLoading] = useState(false);
@@ -92,9 +92,15 @@ const PaymentScreen = ({ route, navigation }) => {
   const isIOS = Platform.OS === 'ios';
   const isAndroid = Platform.OS === 'android';
 
+  // Determine if we should use Stripe based on platform and item type
+  // - Android: always use Stripe
+  // - iOS + in-person item: use Stripe (Apple allows external payment for physical services)
+  // - iOS + online item: use IAP (digital content must use IAP)
+  const shouldUseStripe = isAndroid || (isIOS && isInPerson);
+
   useEffect(() => {
-    // Only fetch Stripe payment intent on Android
-    if (isAndroid) {
+    // Fetch Stripe payment intent if needed
+    if (shouldUseStripe) {
       fetchPaymentIntent();
     }
   }, []);
@@ -134,10 +140,13 @@ const PaymentScreen = ({ route, navigation }) => {
       return;
     }
 
-    if (isIOS) {
-      await handleIOSPayment();
-    } else {
+    // Route to appropriate payment method based on platform and item type
+    if (shouldUseStripe) {
+      // Android or iOS in-person items use Stripe
       await handleAndroidPayment();
+    } else {
+      // iOS online items use IAP
+      await handleIOSPayment();
     }
   };
 
@@ -357,8 +366,8 @@ const PaymentScreen = ({ route, navigation }) => {
           </View>
         </View>
 
-        {/* Payment Method Card - ONLY SHOW ON ANDROID */}
-        {isAndroid && (
+        {/* Payment Method Card - SHOW ON ANDROID OR IOS IN-PERSON ITEMS (STRIPE) */}
+        {shouldUseStripe && (
           <View style={styles.paymentCard}>
             <View style={styles.paymentHeader}>
               <Ionicons name="card-outline" size={24} color={theme.colors.primary} />
@@ -393,8 +402,8 @@ const PaymentScreen = ({ route, navigation }) => {
           </View>
         )}
 
-        {/* iOS Payment Info */}
-        {isIOS && (
+        {/* iOS Payment Info - ONLY FOR ONLINE ITEMS (IAP) */}
+        {isIOS && !isInPerson && (
           <View style={styles.paymentCard}>
             <View style={styles.paymentHeader}>
               <Ionicons name="logo-apple" size={24} color={theme.colors.primary} />
@@ -410,11 +419,11 @@ const PaymentScreen = ({ route, navigation }) => {
         <TouchableOpacity
           style={[
             styles.payButton, 
-            (isAndroid && (!cardComplete || loading)) && styles.payButtonDisabled,
+            (shouldUseStripe && (!cardComplete || loading)) && styles.payButtonDisabled,
             loading && styles.payButtonDisabled
           ]}
           onPress={handlePayment}
-          disabled={(isAndroid && !cardComplete) || loading}
+          disabled={(shouldUseStripe && !cardComplete) || loading}
           activeOpacity={0.8}
         >
           {loading ? (

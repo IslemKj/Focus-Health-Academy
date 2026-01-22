@@ -175,6 +175,7 @@ const EventDetailsScreen = ({ route, navigation }) => {
           itemId: eventId,
           title: event.title,
           price: event.price,
+          isInPerson: event.is_in_person, // Pass in-person flag for payment routing
           onSuccess: () => {
             setIsRegistered(true);
             loadEventDetails();
@@ -320,6 +321,14 @@ const EventDetailsScreen = ({ route, navigation }) => {
           <View style={styles.typeBadge}>
             <Text style={styles.typeText}>{event.event_type || t('event')}</Text>
           </View>
+          
+          {/* In-Person Badge */}
+          {event.is_in_person && (
+            <View style={styles.inPersonBadge}>
+              <Ionicons name="location" size={14} color="#059669" />
+              <Text style={styles.inPersonText}>IN-PERSON EVENT</Text>
+            </View>
+          )}
           
           <Text style={styles.title}>{event.title}</Text>
         </View>
@@ -658,7 +667,23 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },  inPersonBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#D1FAE5',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginTop: 8,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+    gap: 4,
   },
-});
+  inPersonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#059669',
+    letterSpacing: 0.5,
+  },});
 
 export default EventDetailsScreen;

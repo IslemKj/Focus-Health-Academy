@@ -178,6 +178,7 @@ const CourseDetailsScreen = ({ route, navigation }) => {
           itemId: courseId,
           title: course.title,
           price: course.price,
+          isInPerson: course.is_in_person, // Pass in-person flag for payment routing
           onSuccess: () => {
             setIsEnrolled(true);
             loadCourseDetails();
@@ -330,6 +331,14 @@ const CourseDetailsScreen = ({ route, navigation }) => {
           {course.category && (
             <View style={styles.categoryBadge}>
               <Text style={styles.categoryText}>{course.category}</Text>
+            </View>
+          )}
+
+          {/* In-Person Badge */}
+          {course.is_in_person && (
+            <View style={styles.inPersonBadge}>
+              <Ionicons name="location" size={14} color="#059669" />
+              <Text style={styles.inPersonText}>IN-PERSON TRAINING</Text>
             </View>
           )}
         </View>
@@ -577,7 +586,22 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },  inPersonBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#D1FAE5',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    gap: 4,
   },
-});
+  inPersonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#059669',
+    letterSpacing: 0.5,
+  },});
 
 export default CourseDetailsScreen;
