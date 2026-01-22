@@ -13,7 +13,7 @@ import paymentService from './src/services/paymentService';
 import theme from './src/theme';
 
 // Replace with your Stripe publishable key (Android only)
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SZCiOH9PfzfrhLGBMdvj0OBwHqJdxeIwUcbqk5B5rBXizAaH5XpqKM6fZVdfp4Hvp2Ssv299ZGQavAirGaX99Cj00LxAw7oyI';
+const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SZChoHq60gzA5wHLzxf2pUzwLqG53qUiVkuT9UaCIVBHpbMkUviWgdiVF0LKKlhZescBpWCHnferAAfq0AR1zDN00HPPTzzLt';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
