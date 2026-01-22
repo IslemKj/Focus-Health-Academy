@@ -7,10 +7,14 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View, StyleSheet, Platform } from 'react-native';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SplashScreen from 'expo-splash-screen';
 import Navigation from './src/navigation';
 import { authService } from './src/api';
 import paymentService from './src/services/paymentService';
 import theme from './src/theme';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 // Replace with your Stripe publishable key (Android only)
 const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SZChoHq60gzA5wHLzxf2pUzwLqG53qUiVkuT9UaCIVBHpbMkUviWgdiVF0LKKlhZescBpWCHnferAAfq0AR1zDN00HPPTzzLt';
@@ -48,6 +52,8 @@ export default function App() {
       setIsAuthenticated(false);
     } finally {
       setLoading(false);
+      // Hide splash screen after initialization
+      await SplashScreen.hideAsync();
     }
   };
 
